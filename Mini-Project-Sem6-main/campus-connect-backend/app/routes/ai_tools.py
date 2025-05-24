@@ -1,14 +1,19 @@
-# app/routes/ai_tools.py
-
 from flask import Blueprint, request, jsonify
 
 ai_tools_bp = Blueprint('ai_tools', __name__)
 
-@ai_tools_bp.route('/recommendations', methods=['GET'])
+@ai_tools_bp.route('/recommendations', methods=['POST'])
 def get_recommendations():
-    # Placeholder for AI recommendation logic
+    data = request.get_json()
+    user_input = data.get('user_input', '').strip()
+    
+    if not user_input:
+        return jsonify({'error': 'Missing user_input in request body'}), 400
+    
+    # Example: Generate personalized recommendations based on user input
     recommendations = [
-        {"id": 1, "title": "Study Group Formation", "description": "Join a study group to improve your learning experience."},
-        {"id": 2, "title": "Resource Sharing", "description": "Share your notes and resources with peers."}
+        {"id": 101, "title": "Custom Study Group", "description": f"Based on your interest in '{user_input}', join this study group."},
+        {"id": 102, "title": "Personalized Resources", "description": f"Resources tailored for your focus area: {user_input}."}
     ]
+    
     return jsonify({"status": "success", "data": recommendations}), 200
