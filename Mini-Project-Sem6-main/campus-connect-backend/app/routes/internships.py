@@ -1,14 +1,28 @@
-# app/routes/internships.py
-
 from flask import Blueprint, request, jsonify
+from app.db import mongo
 
 internships_bp = Blueprint('internships', __name__)
 
 @internships_bp.route('/list', methods=['GET'])
 def list_internships():
-    # Placeholder for internship listings
-    internships = [
-        {"id": 1, "title": "Software Developer Intern", "company": "Tech Corp", "location": "Remote", "description": "Join our team as a software developer intern."},
-        {"id": 2, "title": "Data Analyst Intern", "company": "Data Inc", "location": "New York", "description": "Work with data analysis and visualization."}
-    ]
-    return jsonify({"status": "success", "data": internships}), 200
+    internships = mongo.db.internships.find()
+    data = []
+    for internship in internships:
+        data.append({
+            "id": str(internship.get('_id')),
+            "title": internship.get('title'),
+            "company": internship.get('company'),
+            "location": internship.get('location'),
+            "description": internship.get('description')
+        })
+    return jsonify({"status": "success", "data": data}), 200
+
+@internships_bp.route('/add', methods=['POST'])
+def add_internship():
+    data = request.get_json()
+    required_fields = ['title', 'company', 'location', 'description']
+    if not all(field in data for field in required_fields):
+        return jsonify({'error': 'Missing required fields'}), 400
+    
+    result = mongo.db.internships.insert_one(data)
+    return jsonify({'status': 'success', 'id': str(result.inserted_id)}), 201
