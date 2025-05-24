@@ -34,17 +34,21 @@ def upload_note():
 
 @notes_bp.route('/<note_id>', methods=['GET'])
 def get_note(note_id):
+    print("mongo.db in get_note:", mongo.db) 
     note = mongo.db.notes.find_one({"_id": ObjectId(note_id)})
-    
+
     if not note:
         return jsonify({'error': 'Note not found'}), 404
-    
-    # Increment views
+
+    # Increment views in DB
     mongo.db.notes.update_one(
         {"_id": ObjectId(note_id)},
         {"$inc": {"views": 1}}
     )
-    
+
+    # Increment views locally to show updated count
+    note['views'] += 1
+
     return jsonify({
         "status": "success",
         "data": {
